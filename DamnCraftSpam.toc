@@ -1,0 +1,6 @@
+## Interface: 30100
+## Title: Damn Craft Spam
+## Notes: Reduces the spam from crafting a bajillion items at once
+## Author: Mayen
+
+DamnCraftSpam.lua
