@@ -1,6 +1,7 @@
 --[[
 	Damn Craft Spam, Mayen of Mal'Ganis (US) PvP
 ]]
+local counterFrame
 
 local function deformat(text)
 	text = string.gsub(text, "%.", "%%.")
@@ -33,6 +34,7 @@ hooksecurefunc("DoTradeSkill", function(id, quantity)
 	if( itemID ) then
 		craftQuantity = quantity
 		craftItemID = tonumber(itemID)
+		counterFrame = nil
 	end
 end)
 
@@ -73,9 +75,13 @@ frame:SetScript("OnEvent", function(self)
 	end
 end)
 
-local function isBlockedMessage(link, quantity)
+local function isBlockedMessage(self, link, quantity)
 	local itemID = tonumber(string.match(link, "item:(%d+)"))
 	if( not itemID or not craftList[itemID] or craftItemID ~= itemID or craftQuantity <= 1 ) then return end
+
+	-- This lets us keep blocking item gains on all frames, but only counting item gains for one frame
+	if( counterFrame and counterFrame ~= self ) then return true end
+	counterFrame = self
 	
 	-- Add in the total time it takes to craft it, and then add an additional 2 seconds leeway
 	totalCreated[itemID] = (totalCreated[itemID] or 0) + (tonumber(quantity) or 1)
@@ -103,9 +109,9 @@ function ChatFrame_MessageEventHandler(self, event, ...)
 		link = string.match(msg, youCreate)
 	end
 	
-	if( link and isBlockedMessage(link, quantity) ) then
+	if( link and isBlockedMessage(self, link, quantity) ) then
 		return true
 	end
-	
+		
 	return orig_ChatFrame_MessageEventHandler(self, event, ...)
 end
